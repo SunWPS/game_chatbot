@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 from pythainlp import word_tokenize
 
+
 def create_bag_of_word():
     intents_path = Path("intents.json")
     pickle_path = Path("prepare/data.pickle")
@@ -23,9 +24,9 @@ def create_bag_of_word():
             words.extend(tokens)
             docs_x.append(tokens)
             docs_y.append(intent["tag"])
-            
+                
         if intent["tag"] not in labels:
-            labels.append(intent["tag"])
+            labels.append(intent["tag"])    
             
     words = sorted(list(set(words)))
 

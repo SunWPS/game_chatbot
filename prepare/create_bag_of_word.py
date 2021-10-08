@@ -20,7 +20,7 @@ def create_bag_of_word():
 
     for intent in data["intents"]:
         for pattern in intent["patterns"]:
-            tokens = word_tokenize(pattern, engine="deepcut")
+            tokens = word_tokenize(pattern.replace(" ", ""), engine="deepcut")
             words.extend(tokens)
             docs_x.append(tokens)
             docs_y.append(intent["tag"])

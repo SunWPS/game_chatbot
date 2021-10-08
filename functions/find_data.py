@@ -18,7 +18,7 @@ def get_infomation(game):
 
 
 def get_price(game):
-    return df[df["name"].str.lower() == game.lower()]["price"].to_string(index=False).strip()
+    return df[df["name"].str.lower() == game.lower()]["price"].to_string(index=False).strip() + " บาท"
 
 
 def get_language(game):
@@ -54,11 +54,11 @@ def get_thai(game):
 
 
 def is_free(game):
-  data = int(get_price(game))
+  data = get_price(game)
   if data == 0:
     return "ฟรีครับ"
   else:
-    return "ไม่ฟรีครับ" +  "ราคา " + str(data) + " บาท"
+    return "ไม่ฟรีครับ" +  "ราคา " + str(data)
 
 
 def get_developer(game):
@@ -83,22 +83,31 @@ def get_tag(game):
     return re.sub(r",", ", ", df[df["name"].str.lower() == game.lower()]["popular_tags"].to_string(index=False).strip())
 
 
-def find(tag, inp):
+def find_game(inp):
+    # if don't have game
+    keep_word = ["spec", "singleplayer", "multiplayer", "url", "single", "multi", "player"]
+    words = re.findall(r"[A-Za-z-']+", inp)
+    return " ".join([i for i in words if i.lower() not in keep_word])
+            
+
+def find(tag, response, inp):
     function_dict = {"get_infomation": get_infomation,
                     "get_price" : get_price,
                     "get_language": get_language,
                     "get_minimun_spec": get_minimun_spec,
-                    "game_mode": game_mode,
+                    "get_game_mode": game_mode,
                     "get_singleplayer": get_singleplayer,
                     "get_multiplayer": get_multiplayer,
                     "get_thai": get_thai,
-                    "is_free": is_free,
+                    "get_is_free": is_free,
                     "get_developer": get_developer,
                     "get_release_year": get_release_year,
                     "get_url": get_url,
                     "get_review": get_review,
                     "get_tag": get_tag}
     
-    return function_dict[tag](inp)
+    game = find_game(inp)
+    
+    return (response + function_dict[tag](game)).replace("{game}", game)
 
-print(find("get_tag", "BATTLETECH"))
+# print(find("get_singleplayer", "", "DOOM มีโหมด single player หรือไม่"))

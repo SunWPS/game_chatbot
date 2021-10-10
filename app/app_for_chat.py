@@ -50,9 +50,10 @@ def bag_of_words(s):
 
 def clean_input(inp):
     inp_to_predict = inp.lower().replace(" ", "")
-    if re.match(r"[a-z0-9-:()\[\]®'!™&.]+", inp):
-        keep_word = ['hi', "hello", "bye", "thank", "spec", "singleplayer", "multiplayer", "url"]
-        words = re.findall(r"[a-z0-9-:()\[\]®'!™&.]+", inp_to_predict)
+    if re.match(r"[a-z0-9-:()_\[\]'!&.]+", inp):
+        keep_word = ['hi', "hello", "bye", "thank", "spec", "singleplayer", "multiplayer", "link"]
+        words = re.findall(r"[a-z0-9-:()_\[\]'!&.]+", inp_to_predict)
+        print(words)
         for word in words:
             if word not in keep_word:
                 inp_to_predict = inp_to_predict.replace(word, "")
@@ -72,7 +73,7 @@ def get_response(tag, inp):
     return response
 
 
-def chat(inp) -> object:
+def chat(inp):
     inp_to_predict = clean_input(inp)
 
     results = model.predict(bag_of_words(inp_to_predict))
@@ -82,4 +83,7 @@ def chat(inp) -> object:
     if results[0][results_index] > 0.7:
         return get_response(tag, inp)
 
-    return "ชอโทษครับ ผมไม่เข้าใจครับ"
+    responses = data['fail']["dontknow"]
+    response = random.choice(responses)
+    return response
+

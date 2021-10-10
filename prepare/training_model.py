@@ -17,12 +17,12 @@ def training_model():
 
     # define the keras model
     model = Sequential()
-    model.add(Dense(8, activation='relu', input_shape=(len(training[0]),)))
+    model.add(Dense(8, activation="relu", input_shape=(len(training[0]),)))
 
     model.add(Dense(8, activation="relu"))
     model.add(Dense(len(output[0]), activation="softmax"))
 
-    model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss="mean_squared_error", optimizer="adam", metrics=["accuracy"])
     model.fit(training, output, epochs=1000, batch_size=8)
 
     model.save(model_path)

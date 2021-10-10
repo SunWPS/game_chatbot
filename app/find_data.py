@@ -1,24 +1,33 @@
 import re
+import random
 import pickle
+import json
 from pathlib import Path
 
 import pandas as pd
 
 
 games_path = Path("data/games.pickle")
+intents_path = Path("intents.json")
 
 with open(games_path, "rb") as f:
     df, genre, language, tags = pickle.load(f)
+
+with open(intents_path, "r", encoding="utf-8") as f:
+    fail = json.load(f)
 
 pd.set_option('display.max_colwidth', None)
 
 
 def get_information(game):
-    return df[df["name"].str.lower() == game.lower()]["desc_snippet"].to_string(index=False).strip()
+    return "\n" + df[df["name"].str.lower() == game.lower()]["desc_snippet"].to_string(index=False).strip()
 
 
 def get_price(game):
-    return df[df["name"].str.lower() == game.lower()]["price"].to_string(index=False).strip() + " บาท"
+    price = df[df["name"].str.lower() == game.lower()]["price"].to_string(index=False).strip()
+    if int(price) == 0:
+        return "ฟรีครับ"
+    return " ราคา " + price + " บาทครับ"
 
 
 def get_language(game):
@@ -27,10 +36,10 @@ def get_language(game):
 
 def get_minimum_spec(game):
     txt = df[df["name"].str.lower() == game.lower()]["minimum_requirements"].to_string(index=False)
-    return "\n".join(txt.strip().split(","))
+    return "\n"+"\n".join(txt.strip().split(","))
 
 
-def game_mode(game):
+def get_game_mode(game):
     sp = int(df[df["name"].str.lower() == game.lower()]["single_player"].to_string(index=False))
     mp = int(df[df["name"].str.lower() == game.lower()]["multi_player"].to_string(index=False))
     if sp == 1 and mp == 1:
@@ -42,38 +51,40 @@ def game_mode(game):
 
 
 def get_singleplayer(game):
-    return "มีครับ" if int(
-        df[df["name"].str.lower() == game.lower()]["single_player"].to_string(index=False)) == 1 else "ไม่มีครับ"
+    return "มีโหมด Single Player ครับ" if int(
+        df[df["name"].str.lower() == game.lower()]["single_player"].to_string(index=False)) == 1 \
+        else "ไม่มีโหมด Single Player ครับ"
 
 
 def get_multiplayer(game):
-    return "มีครับ" if int(
-        df[df["name"].str.lower() == game.lower()]["multi_player"].to_string(index=False)) == 1 else "ไม่มีครับ"
+    return "มีโหมด Multi Player ครับ" if int(
+        df[df["name"].str.lower() == game.lower()]["multi_player"].to_string(index=False)) == 1 \
+        else "ไม่มีโหมด Multi Player ครับ"
 
 
 def get_thai(game):
-    return "มีครับ" if int(
-        df[df["name"].str.lower() == game.lower()]["thai"].to_string(index=False)) == 1 else "ไม่มีครับ"
+    return "รองรับภาษาไทยครับ" if int(
+        df[df["name"].str.lower() == game.lower()]["thai"].to_string(index=False)) == 1 else "ไม่รองรับภาษาไทยครับ"
 
 
-def is_free(game):
+def get_is_free(game):
     data = get_price(game)
-    if data == 0:
+    if data == "ฟรีครับ":
         return "ฟรีครับ"
     else:
-        return "ไม่ฟรีครับ" + "ราคา " + str(data)
+        return "ไม่ฟรีครับ" + str(data)
 
 
 def get_developer(game):
-    return df[df["name"].str.lower() == game.lower()]["developer"].to_string(index=False).strip()
+    return df[df["name"].str.lower() == game.lower()]["developer"].to_string(index=False).strip() + " ครับ"
 
 
 def get_release_year(game):
-    return df[df["name"].str.lower() == game.lower()]["release_date"].to_string(index=False).strip()
+    return df[df["name"].str.lower() == game.lower()]["release_date"].to_string(index=False).strip() + " ครับ"
 
 
 def get_url(game):
-    return df[df["name"].str.lower() == game.lower()]["url"].to_string(index=False).strip()
+    return df[df["name"].str.lower() == game.lower()]["url"].to_string(index=False).strip() + " ครับ"
 
 
 def get_review(game):
@@ -87,9 +98,9 @@ def get_tag(game):
 
 
 def find_game(inp):
-    # if don't have game
-    keep_word = ["spec", "singleplayer", "multiplayer", "url", "single", "multi", "player"]
-    words = re.findall(r"[A-Za-z0-9-:()\[\]®'!™&.]+", inp)
+    keep_word = ["spec", "singleplayer", "multiplayer", "link", "single", "multi", "player"]
+    words = re.findall(r"[A-Za-z0-9-:()_\[\]'!&.]+", inp)
+    print(words)
     return " ".join([i for i in words if i.lower() not in keep_word])
 
 
@@ -98,11 +109,11 @@ def find(tag, response, inp):
                      "get_price": get_price,
                      "get_language": get_language,
                      "get_minimum_spec": get_minimum_spec,
-                     "get_game_mode": game_mode,
+                     "get_game_mode": get_game_mode,
                      "get_singleplayer": get_singleplayer,
                      "get_multiplayer": get_multiplayer,
                      "get_thai": get_thai,
-                     "get_is_free": is_free,
+                     "get_is_free": get_is_free,
                      "get_developer": get_developer,
                      "get_release_year": get_release_year,
                      "get_url": get_url,
@@ -111,9 +122,14 @@ def find(tag, response, inp):
 
     game = find_game(inp)
     if game == "":
-        return "ขอโทษครับ ไม่พบชื่อเกมในประโยคครับ"
+        responses = fail['fail']["cantfindgame"]
+        response = random.choice(responses)
+        return response
 
     txt = function_dict[tag](game)
-    if txt == "Series([], )":
-        return "ขอโทษครับ ผมไม่พบข้อมูลเกมนี้ในระบบครับ"
+    if "Series([], )" in txt:
+        responses = fail['fail']["donthavedata"]
+        response = random.choice(responses)
+        return response.replace("{game}", game)
+
     return (response + txt).replace("{game}", game)

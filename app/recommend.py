@@ -25,7 +25,8 @@ def recommend_random():
 def recommend_single_player():
     i = 1
     txt = ""
-    for name in df[df["single_player"] == 1].sort_values("wavg", ascending=False)["name"].head():
+    games = df[df["single_player"] == 1].sample(n=5)
+    for name in games["name"]:
         txt += str(i) + ". " + name + "\n"
         i += 1
     return txt
@@ -34,7 +35,8 @@ def recommend_single_player():
 def recommend_multi_player():
     i = 1
     txt = ""
-    for name in df[df["multi_player"] == 1].sort_values("wavg", ascending=False)["name"].head():
+    games = df[df["multi_player"] == 1].sample(n=5)
+    for name in games["name"]:
         txt += str(i) + ". " + name + "\n"
         i += 1
     return txt
@@ -43,7 +45,8 @@ def recommend_multi_player():
 def recommend_free():
     i = 1
     txt = ""
-    for name in df[df["price"] == 0].sort_values("wavg", ascending=False)["name"].head():
+    games = df[df["price"] == 0].sample(n=5)
+    for name in games["name"]:
         txt += str(i) + ". " + name + "\n"
         i += 1
     return txt
@@ -53,7 +56,8 @@ def recommend_morethan_year(inp):
     year = int(re.findall(r"\d\d\d\d", inp)[0])
     i = 1
     txt = ""
-    for name in df[df["release_date"].astype('int64') > year].sort_values("wavg", ascending=False)["name"].head():
+    games = df[df["release_date"].astype('int64') > year].sample(n=5)
+    for name in games["name"]:
         txt += str(i) + ". " + name + "\n"
         i += 1
     return str(year), txt;
@@ -63,7 +67,8 @@ def recommend_lessthan_year(inp):
     year = int(re.findall(r"\d\d\d\d", inp)[0])
     i = 1
     txt = ""
-    for name in df[df["release_date"].astype('int64') < year].sort_values("wavg", ascending=False)["name"].head():
+    games = df[df["release_date"].astype('int64') < year].sample(n=5)
+    for name in games["name"]:
         txt += str(i) + ". " + name + "\n"
         i += 1
     return str(year), txt;
@@ -73,7 +78,8 @@ def recommend_in_year(inp):
     year = int(re.findall(r"\d\d\d\d", inp)[0])
     i = 1
     txt = ""
-    for name in df[df["release_date"].astype('int64') == year].sort_values("wavg", ascending=False)["name"].head():
+    games = df[df["release_date"].astype('int64') == year].sample(n=5)
+    for name in games["name"]:
         txt += str(i) + ". " + name + "\n"
         i += 1
     return str(year), txt;
@@ -83,7 +89,8 @@ def recommend_morethan_price(inp):
     price = int(re.findall(r"\d+", inp)[0])
     i = 1
     txt = ""
-    for name in df[df["price"] > price].sort_values("wavg", ascending=False)["name"].head():
+    games = df[df["price"] > price].sample(n=5)
+    for name in games["name"]:
         txt += str(i) + ". " + name + "\n"
         i += 1
     return str(price), txt;
@@ -93,7 +100,8 @@ def recommend_lessthan_price(inp):
     price = int(re.findall(r"\d+", inp)[0])
     i = 1
     txt = ""
-    for name in df[df["price"] < price].sort_values("wavg", ascending=False)["name"].head():
+    games = df[df["price"] < price].sample(n=5)
+    for name in games["name"]:
         txt += str(i) + ". " + name + "\n"
         i += 1
     return str(price), txt;
@@ -104,7 +112,7 @@ def recommend(tag, response, inp):
                "recommend_single_player": recommend_single_player,
                "recommend_multi_player": recommend_multi_player,
                "recommend_free": recommend_free, }
-    have_argm = {"recommed_morethan_year": recommend_morethan_year,
+    have_argm = {"recommend_morethan_year": recommend_morethan_year,
                  "recommend_lessthan_year": recommend_lessthan_year,
                  "recommend_in_year": recommend_in_year,
                  "recommend_morethan_price": recommend_morethan_price,

@@ -7,7 +7,7 @@ from linebot import LineBotApi
 
 from app.app_for_chat import chat
 
-line_access_token = "Xr+KlDxZAUwtksajW8/sqLn5mZ6cBVaXrjR0GmP4Up/KrFnKqAhEivW+amDR7e4cCD7fP8wLrpDgozvHKzAhgzP3JxtKQXeBNH/eBERP2qDdkoVHQd266+pSZNdt8gT2HDjjkXUlzWJMo7kDr6YY7AdB04t89/1O/w1cDnyilFU="
+line_access_token = "token"
 line_bot_api = LineBotApi(line_access_token)
 app = FastAPI()
 

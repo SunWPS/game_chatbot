@@ -1,110 +1,91 @@
 import re
-import pickle
 from pathlib import Path
 
-import pandas as pd
+import mysql.connector
+from mysql.connector.constants import ClientFlag
 
-games_path = Path("data/games.pickle")
+ssl_ca = Path("ssl/server-ca.pem")
+ssl_cert = Path("ssl/client-cert.pem")
+ssl_key = Path("ssl/client-key.pem")
 
-with open(games_path, "rb") as f:
-    df, genre, language, tags = pickle.load(f)
+config = {
+    'user': 'root',
+    'password': '',
+    'host': '',
+    'client_flags': [ClientFlag.SSL],
+    'ssl_ca': ssl_ca,
+    'ssl_cert': ssl_cert,
+    'ssl_key': ssl_key,
+    'database': ''
+}
 
-pd.set_option('display.max_colwidth', None)
+
+def query_data(inp_query, cursor):
+    query = "select name from chatbotdata.gamesdata " + inp_query + ";"
+    cursor.execute(query)
+    return cursor.fetchall()
 
 
-def recommend_random():
-    random_game = df.sample(n=5)
+def where_and_random(column, command, value, cursor):
+    games = query_data("where " + column + command + str(value) + " order by rand() limit 5", cursor)
     i = 1
     txt = ""
-    for name in random_game["name"]:
-        txt += str(i) + ". " + name + "\n"
+    for name in games:
+        txt += str(i) + ". " + name[0] + "\n"
         i += 1
     return txt
 
 
-def recommend_single_player():
+def recommend_random(cursor):
+    games = query_data("order by rand() limit 5", cursor)
     i = 1
     txt = ""
-    games = df[df["single_player"] == 1].sample(n=5)
-    for name in games["name"]:
-        txt += str(i) + ". " + name + "\n"
+    for name in games:
+        txt += str(i) + ". " + name[0] + "\n"
         i += 1
     return txt
 
 
-def recommend_multi_player():
-    i = 1
-    txt = ""
-    games = df[df["multi_player"] == 1].sample(n=5)
-    for name in games["name"]:
-        txt += str(i) + ". " + name + "\n"
-        i += 1
-    return txt
+def recommend_single_player(cursor):
+    return where_and_random("single_player", "=", 1, cursor)
 
 
-def recommend_free():
-    i = 1
-    txt = ""
-    games = df[df["price"] == 0].sample(n=5)
-    for name in games["name"]:
-        txt += str(i) + ". " + name + "\n"
-        i += 1
-    return txt
+def recommend_multi_player(cursor):
+    return where_and_random("multi_player", "=", 1, cursor)
 
 
-def recommend_morethan_year(inp):
-    year = int(re.findall(r"\d\d\d\d", inp)[0])
-    i = 1
-    txt = ""
-    games = df[df["release_date"].astype('int64') > year].sample(n=5)
-    for name in games["name"]:
-        txt += str(i) + ". " + name + "\n"
-        i += 1
-    return str(year), txt;
+def recommend_free(cursor):
+    return where_and_random("price", "=", 0, cursor)
 
 
-def recommend_lessthan_year(inp):
-    year = int(re.findall(r"\d\d\d\d", inp)[0])
-    i = 1
-    txt = ""
-    games = df[df["release_date"].astype('int64') < year].sample(n=5)
-    for name in games["name"]:
-        txt += str(i) + ". " + name + "\n"
-        i += 1
-    return str(year), txt;
+def recommend_morethan_year(inp, cursor):
+    year = re.findall(r"\d\d\d\d", inp)[0]
+    txt = where_and_random("release_date", ">", year, cursor)
+    return year, txt;
 
 
-def recommend_in_year(inp):
-    year = int(re.findall(r"\d\d\d\d", inp)[0])
-    i = 1
-    txt = ""
-    games = df[df["release_date"].astype('int64') == year].sample(n=5)
-    for name in games["name"]:
-        txt += str(i) + ". " + name + "\n"
-        i += 1
-    return str(year), txt;
+def recommend_lessthan_year(inp, cursor):
+    year = re.findall(r"\d\d\d\d", inp)[0]
+    txt = where_and_random("release_date", "<", year, cursor)
+    return year, txt;
 
 
-def recommend_morethan_price(inp):
-    price = int(re.findall(r"\d+", inp)[0])
-    i = 1
-    txt = ""
-    games = df[df["price"] > price].sample(n=5)
-    for name in games["name"]:
-        txt += str(i) + ". " + name + "\n"
-        i += 1
-    return str(price), txt;
+def recommend_in_year(inp, cursor):
+    year = re.findall(r"\d\d\d\d", inp)[0]
+    txt = where_and_random("release_date", "=", year, cursor)
+    return year, txt;
 
 
-def recommend_lessthan_price(inp):
-    price = int(re.findall(r"\d+", inp)[0])
-    i = 1
-    txt = ""
-    games = df[df["price"] < price].sample(n=5)
-    for name in games["name"]:
-        txt += str(i) + ". " + name + "\n"
-        i += 1
-    return str(price), txt;
+def recommend_morethan_price(inp, cursor):
+    price = re.findall(r"\d+", inp)[0]
+    txt = where_and_random("price", ">", price, cursor)
+    return price, txt;
+
+
+def recommend_lessthan_price(inp, cursor):
+    price = re.findall(r"\d+", inp)[0]
+    txt = where_and_random("price", "<", price, cursor)
+    return price, txt;
 
 
 def recommend(tag, response, inp):
@@ -117,8 +98,15 @@ def recommend(tag, response, inp):
                  "recommend_in_year": recommend_in_year,
                  "recommend_morethan_price": recommend_morethan_price,
                  "recommend_lessthan_price": recommend_lessthan_price, }
-    if tag in no_argm:
-        return response + "\n" + no_argm[tag]()
 
-    data, txt = have_argm[tag](inp)
-    return (response + "\n" + txt).replace("{data}", data)
+    cncx = mysql.connector.connect(**config)
+    cursor = cncx.cursor()
+
+    if tag in no_argm:
+        txt = response + "\n" + no_argm[tag](cursor)
+    else:
+        data, txt = have_argm[tag](inp, cursor)
+        txt = (response + "\n" + txt).replace("{data}", data)
+
+    cursor.close()
+    return txt

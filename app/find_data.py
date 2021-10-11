@@ -1,48 +1,87 @@
 import re
 import random
-import pickle
 import json
 from pathlib import Path
 
-import pandas as pd
+import mysql.connector
+from mysql.connector.constants import ClientFlag
 
 
-games_path = Path("data/games.pickle")
 intents_path = Path("intents.json")
-
-with open(games_path, "rb") as f:
-    df, genre, language, tags = pickle.load(f)
+ssl_ca = Path("ssl/server-ca.pem")
+ssl_cert = Path("ssl/client-cert.pem")
+ssl_key = Path("ssl/client-key.pem")
 
 with open(intents_path, "r", encoding="utf-8") as f:
     fail = json.load(f)
 
-pd.set_option('display.max_colwidth', None)
+config = {
+    'user': 'root',
+    'password': '',
+    'host': '',
+    'client_flags': [ClientFlag.SSL],
+    'ssl_ca': ssl_ca,
+    'ssl_cert': ssl_cert,
+    'ssl_key': ssl_key,
+    'database': ''
+}
 
 
-def get_information(game):
-    return "\n" + df[df["name"].str.lower() == game.lower()]["desc_snippet"].to_string(index=False).strip()
+def get_information(data):
+    return "\n" + data.strip()
 
 
-def get_price(game):
-    price = df[df["name"].str.lower() == game.lower()]["price"].to_string(index=False).strip()
-    if int(price) == 0:
+def get_price(price):
+    if price == 0:
         return "ฟรีครับ"
-    return " ราคา " + price + " บาทครับ"
+    return " ราคา " + str(price) + " บาทครับ"
 
 
-def get_language(game):
-    return re.sub(r",", ", ", df[df["name"].str.lower() == game.lower()]["languages"].to_string(index=False).strip())
+def get_language(languages):
+    return re.sub(r",", ", ", languages.strip())
 
 
-def get_minimum_spec(game):
-    txt = df[df["name"].str.lower() == game.lower()]["minimum_requirements"].to_string(index=False)
-    return "\n"+"\n".join(txt.strip().split(","))
+def get_minimum_spec(spec):
+    return "\n"+"\n".join(spec.strip().split(","))
 
 
-def get_game_mode(game):
-    sp = int(df[df["name"].str.lower() == game.lower()]["single_player"].to_string(index=False))
-    mp = int(df[df["name"].str.lower() == game.lower()]["multi_player"].to_string(index=False))
-    if sp == 1 and mp == 1:
+def get_singleplayer(single):
+    return "มีโหมด Single Player ครับ" if single == 1 else "ไม่มีโหมด Single Player ครับ"
+
+
+def get_multiplayer(multi):
+    return "มีโหมด Multi Player ครับ" if multi == 1 else "ไม่มีโหมด Multi Player ครับ"
+
+
+def get_thai(thai):
+    return "รองรับภาษาไทยครับ" if thai == 1 else "ไม่รองรับภาษาไทยครับ"
+
+
+def get_developer(developer):
+    return developer.strip() + " ครับ"
+
+
+def get_release_year(year):
+    return str(year) + " ครับ"
+
+
+def get_url(url):
+    return url.strip() + " ครับ"
+
+
+def get_review(game, cursor):
+    percent = normal_query(game, "positive_percent", cursor)
+    user = normal_query(game, "user_review", cursor)
+    return str(percent) + "% จากการรีวิวทั้งหมด " + str(user) + " คน"
+
+
+def get_game_mode(game, cursor):
+    sp = normal_query(game, "single_player", cursor)
+    mp = normal_query(game, "multi_player", cursor)
+
+    if not sp or not mp:
+        return False
+    elif sp == 1 and mp == 1:
         return "Single Player และ Multi Player ครับ"
     elif sp == 1:
         return "แค่ Single Player ครับ"
@@ -50,51 +89,30 @@ def get_game_mode(game):
         return "แค่ Multi Player ครับ"
 
 
-def get_singleplayer(game):
-    return "มีโหมด Single Player ครับ" if int(
-        df[df["name"].str.lower() == game.lower()]["single_player"].to_string(index=False)) == 1 \
-        else "ไม่มีโหมด Single Player ครับ"
-
-
-def get_multiplayer(game):
-    return "มีโหมด Multi Player ครับ" if int(
-        df[df["name"].str.lower() == game.lower()]["multi_player"].to_string(index=False)) == 1 \
-        else "ไม่มีโหมด Multi Player ครับ"
-
-
-def get_thai(game):
-    return "รองรับภาษาไทยครับ" if int(
-        df[df["name"].str.lower() == game.lower()]["thai"].to_string(index=False)) == 1 else "ไม่รองรับภาษาไทยครับ"
-
-
-def get_is_free(game):
-    data = get_price(game)
-    if data == "ฟรีครับ":
+def get_is_free(game, cursor):
+    price = normal_query(game, "price", cursor)
+    if price == 0:
         return "ฟรีครับ"
     else:
-        return "ไม่ฟรีครับ" + str(data)
+        return "ไม่ฟรีครับ" + " ราคา " + str(price) + " บาทครับ"
 
 
-def get_developer(game):
-    return df[df["name"].str.lower() == game.lower()]["developer"].to_string(index=False).strip() + " ครับ"
+def normal_query(game, column, cursor):
+    query = "select " + column + " from gamesdata where lower(name) = '" + game.lower() + "';"
+    cursor.execute(query)
+    data = cursor.fetchall()
+    if len(data) == 0:
+        return False
+    return data[0][0]
 
 
-def get_release_year(game):
-    return df[df["name"].str.lower() == game.lower()]["release_date"].to_string(index=False).strip() + " ครับ"
-
-
-def get_url(game):
-    return df[df["name"].str.lower() == game.lower()]["url"].to_string(index=False).strip() + " ครับ"
-
-
-def get_review(game):
-    percent = df[df["name"].str.lower() == game.lower()]["positive_percent"].to_string(index=False).strip()
-    user = df[df["name"].str.lower() == game.lower()]["user_review"].to_string(index=False).strip()
-    return percent + "% จากการรีวิวทั้งหมด " + user + " คน"
-
-
-def get_tag(game):
-    return re.sub(r",", ", ", df[df["name"].str.lower() == game.lower()]["popular_tags"].to_string(index=False).strip())
+def query_data(game, column, function, cursor):
+    query = "select " + column + " from gamesdata where lower(name) = '" + game.lower() + "';"
+    cursor.execute(query)
+    data = cursor.fetchall()
+    if len(data) == 0:
+        return False
+    return function(data[0][0])
 
 
 def find_game(inp):
@@ -104,20 +122,20 @@ def find_game(inp):
 
 
 def find(tag, response, inp):
-    function_dict = {"get_information": get_information,
-                     "get_price": get_price,
-                     "get_language": get_language,
-                     "get_minimum_spec": get_minimum_spec,
-                     "get_game_mode": get_game_mode,
-                     "get_singleplayer": get_singleplayer,
-                     "get_multiplayer": get_multiplayer,
-                     "get_thai": get_thai,
-                     "get_is_free": get_is_free,
-                     "get_developer": get_developer,
-                     "get_release_year": get_release_year,
-                     "get_url": get_url,
-                     "get_review": get_review,
-                     "get_tag": get_tag}
+    function_dict = {"get_information": [get_information, "desc_snippet"],
+                     "get_price": [get_price, "price"],
+                     "get_language": [get_language, "languages"],
+                     "get_minimum_spec": [get_minimum_spec, "minimum_requirements"],
+                     "get_singleplayer": [get_singleplayer, "single_player"],
+                     "get_multiplayer": [get_multiplayer, "multi_player"],
+                     "get_thai": [get_thai, "thai"],
+                     "get_developer": [get_developer, "developer"],
+                     "get_release_year": [get_release_year, "release_date"],
+                     "get_url": [get_url, "url"]}
+
+    extra_dict = {"get_review": get_review,
+                  "get_game_mode": get_game_mode,
+                  "get_is_free": get_is_free}
 
     game = find_game(inp)
     if game == "":
@@ -125,8 +143,17 @@ def find(tag, response, inp):
         response = random.choice(responses)
         return response
 
-    txt = function_dict[tag](game)
-    if "Series([], )" in txt:
+    cncx = mysql.connector.connect(**config)
+    cursor = cncx.cursor()
+
+    if tag not in extra_dict:
+        txt = query_data(game, function_dict[tag][1], function_dict[tag][0], cursor)
+    else:
+        txt = extra_dict[tag](game, cursor)
+
+    cncx.close()
+
+    if not txt:
         responses = fail['fail']["donthavedata"]
         response = random.choice(responses)
         return response.replace("{game}", game)

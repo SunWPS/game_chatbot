@@ -8,9 +8,6 @@ from mysql.connector.constants import ClientFlag
 
 
 intents_path = Path("intents.json")
-ssl_ca = Path("ssl/server-ca.pem")
-ssl_cert = Path("ssl/client-cert.pem")
-ssl_key = Path("ssl/client-key.pem")
 
 with open(intents_path, "r", encoding="utf-8") as f:
     fail = json.load(f)
@@ -20,9 +17,9 @@ config = {
     'password': '',
     'host': '',
     'client_flags': [ClientFlag.SSL],
-    'ssl_ca': ssl_ca,
-    'ssl_cert': ssl_cert,
-    'ssl_key': ssl_key,
+    'ssl_ca': "ssl/server-ca.pem",
+    'ssl_cert': "ssl/client-cert.pem",
+    'ssl_key': "ssl/client-key.pem",
     'database': ''
 }
 

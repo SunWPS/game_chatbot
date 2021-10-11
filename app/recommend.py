@@ -1,21 +1,17 @@
 import re
-from pathlib import Path
 
 import mysql.connector
 from mysql.connector.constants import ClientFlag
 
-ssl_ca = Path("ssl/server-ca.pem")
-ssl_cert = Path("ssl/client-cert.pem")
-ssl_key = Path("ssl/client-key.pem")
 
 config = {
     'user': 'root',
     'password': '',
     'host': '',
     'client_flags': [ClientFlag.SSL],
-    'ssl_ca': ssl_ca,
-    'ssl_cert': ssl_cert,
-    'ssl_key': ssl_key,
+    'ssl_ca': "ssl/server-ca.pem",
+    'ssl_cert': "ssl/client-cert.pem",
+    'ssl_key': "ssl/client-key.pem",
     'database': ''
 }
 

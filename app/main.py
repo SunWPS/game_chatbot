@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from linebot.models import TextSendMessage
 from linebot import LineBotApi
 
-from app.app_for_chat import chat
+from app_for_chat import chat
 
 line_access_token = "token"
 line_bot_api = LineBotApi(line_access_token)

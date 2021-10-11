@@ -9,8 +9,8 @@ from pythainlp import word_tokenize
 from tensorflow import keras
 import tensorflow as tf
 
-from app.find_data import find
-from app.recommend import recommend
+from find_data import find
+from recommend import recommend
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:

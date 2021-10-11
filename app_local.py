@@ -16,9 +16,9 @@ from app.recommend import recommend
 
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-model_path = Path("prepare/model")
-data_path = Path("prepare/data.pickle")
-intents_path = Path("intents.json")
+model_path = Path("app/prepare/model")
+data_path = Path("app/prepare/data.pickle")
+intents_path = Path("app/intents.json")
 
 model = keras.models.load_model(model_path)
 

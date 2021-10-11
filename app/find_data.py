@@ -100,7 +100,6 @@ def get_tag(game):
 def find_game(inp):
     keep_word = ["spec", "singleplayer", "multiplayer", "link", "single", "multi", "player"]
     words = re.findall(r"[A-Za-z0-9-:()_\[\]'!&.]+", inp)
-    print(words)
     return " ".join([i for i in words if i.lower() not in keep_word])
 
 

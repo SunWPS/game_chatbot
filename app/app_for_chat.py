@@ -53,7 +53,6 @@ def clean_input(inp):
     if re.match(r"[a-z0-9-:()_\[\]'!&.]+", inp):
         keep_word = ['hi', "hello", "bye", "thank", "spec", "singleplayer", "multiplayer", "link"]
         words = re.findall(r"[a-z0-9-:()_\[\]'!&.]+", inp_to_predict)
-        print(words)
         for word in words:
             if word not in keep_word:
                 inp_to_predict = inp_to_predict.replace(word, "")

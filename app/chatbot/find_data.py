@@ -10,9 +10,9 @@ with open("knowledge_base/intents.json", "r", encoding="utf-8") as f:
     fail = json.load(f)
 
 config = {
-    'user': 'root',
-    'password': '0853246469',
-    'host': '34.126.136.1',
+    'user': '',
+    'password': '',
+    'host': '',
     'client_flags': [ClientFlag.SSL],
     'ssl_ca': "ssl/server-ca.pem",
     'ssl_cert': "ssl/client-cert.pem",

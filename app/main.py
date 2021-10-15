@@ -1,5 +1,6 @@
 from typing import List
 from pydantic import BaseModel
+import configparser
 
 from fastapi import FastAPI
 from linebot.models import TextSendMessage
@@ -7,7 +8,11 @@ from linebot import LineBotApi
 
 from chatbot.app_for_chat import chat
 
-line_access_token = ""
+
+config = configparser.ConfigParser()
+config.read('Configuration.ini')
+
+line_access_token = config['line']['token']
 line_bot_api = LineBotApi(line_access_token)
 app = FastAPI()
 

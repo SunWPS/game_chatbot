@@ -1,6 +1,7 @@
 import re
 import random
 import json
+import configparser
 
 import mysql.connector
 from mysql.connector.constants import ClientFlag
@@ -9,15 +10,18 @@ from mysql.connector.constants import ClientFlag
 with open("knowledge_base/intents.json", "r", encoding="utf-8") as f:
     fail = json.load(f)
 
+config = configparser.ConfigParser()
+config.read('Configuration.ini')
+
 config = {
-    'user': '',
-    'password': '',
-    'host': '',
+    'user': config['database']['user'],
+    'password': config['database']['password'],
+    'host': config['database']['host'],
     'client_flags': [ClientFlag.SSL],
     'ssl_ca': "ssl/server-ca.pem",
     'ssl_cert': "ssl/client-cert.pem",
     'ssl_key': "ssl/client-key.pem",
-    'database': ''
+    'database': config['database']['database']
 }
 
 

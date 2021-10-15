@@ -1,18 +1,22 @@
 import re
+import configparser
 
 import mysql.connector
 from mysql.connector.constants import ClientFlag
 
 
+config = configparser.ConfigParser()
+config.read('Configuration.ini')
+
 config = {
-    'user': '',
-    'password': '',
-    'host': '',
+    'user': config['database']['user'],
+    'password': config['database']['password'],
+    'host': config['database']['host'],
     'client_flags': [ClientFlag.SSL],
     'ssl_ca': "ssl/server-ca.pem",
     'ssl_cert': "ssl/client-cert.pem",
     'ssl_key': "ssl/client-key.pem",
-    'database': ''
+    'database': config['database']['database']
 }
 
 

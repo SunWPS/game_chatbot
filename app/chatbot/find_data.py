@@ -67,6 +67,10 @@ def get_url(url):
     return url.strip() + " ครับ"
 
 
+def get_genre(genre):
+    return genre.replace(",", ", ") + " ครับ"
+
+
 def get_review(game, cursor):
     percent = normal_query(game, "positive_percent", cursor)
     user = normal_query(game, "user_review", cursor)
@@ -114,7 +118,7 @@ def query_data(game, column, function, cursor):
 
 
 def find_game(inp):
-    keep_word = ["spec", "singleplayer", "multiplayer", "link", "single", "multi", "player"]
+    keep_word = ["spec", "singleplayer", "multiplayer", "link", "single", "multi", "player", "random"]
     words = re.findall(r"[A-Za-z0-9-:()_\[\]'!&.]+", inp)
     return " ".join([i for i in words if i.lower() not in keep_word])
 
@@ -129,7 +133,8 @@ def find(tag, response, inp):
                      "get_thai": [get_thai, "thai"],
                      "get_developer": [get_developer, "developer"],
                      "get_release_year": [get_release_year, "release_date"],
-                     "get_url": [get_url, "url"]}
+                     "get_url": [get_url, "url"],
+                     "get_genre": [get_genre, "genre"]}
 
     extra_dict = {"get_review": get_review,
                   "get_game_mode": get_game_mode,

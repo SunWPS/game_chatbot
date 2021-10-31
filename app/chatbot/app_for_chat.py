@@ -48,7 +48,7 @@ def bag_of_words(s):
 def clean_input(inp):
     inp_to_predict = inp.lower().replace(" ", "")
     if re.match(r"[a-z0-9-:()_\[\]'!&.]+", inp):
-        keep_word = ['hi', "hello", "bye", "thank", "spec", "singleplayer", "multiplayer", "link"]
+        keep_word = ['hi', "hello", "bye", "thank", "spec", "singleplayer", "multiplayer", "link", "random"]
         words = re.findall(r"[a-z0-9-:()_\[\]'!&.]+", inp_to_predict)
         for word in words:
             if word not in keep_word:

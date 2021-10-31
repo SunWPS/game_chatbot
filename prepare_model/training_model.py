@@ -25,7 +25,7 @@ def training_model():
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
     # model.fit(training, output, epochs=250, batch_size=8)
 
-    history = model.fit(training, output, epochs=100, batch_size=8)
+    history = model.fit(training, output, epochs=110, batch_size=8)
 
     # accuracy and epoch
     plt.plot(history.history["accuracy"])

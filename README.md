@@ -1,7 +1,6 @@
 # Game Chatbot
 
-This is a project for my Natural Language Processing (NLP) class that aims to improve my knowledge of Deep learning
-and NLP base on Thai language.
+This is a project for my Natural Language Processing (NLP) class that aims to improve my knowledge of deep learning and NLP based on the Thai language.
 
 ## The Data Set
 https://www.kaggle.com/trolukovich/steam-games-complete-dataset
